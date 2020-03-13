@@ -46,7 +46,7 @@ global fs fc
 
 % 1. Path of raw data
 % Set directory for data importing and exporting
-pathInput = [pwd slash 'input data']; % folder path for raw data
+pathInput = [pwd slash 'raw data']; % folder path for raw data
 
 % 2. Filter options
 iflpfilter = 'on';  % low-pass filter: 'on' or 'off'
@@ -128,38 +128,38 @@ for i = 1:size(ids,1)
     surf = label_condition(info(:,2)); % surface type
     cellInfo  = [num2cell(info),cellstr(surf)];
     
-    label = ['Subject','Trial','TrialDuration','Surface','Sensor',...
+    label = ['Participant','Trial','TrialDuration','Surface','Sensor',...
         'MissingCount','Missingpct',label];
     
     % Trunk
     trunk = array2table([cellInfo,trunk]);
     trunk.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('trunk') = trunk;
+    data.(['ID' num2str(i)]).('trunk') = trunk;
     
     % Right Thigh
     thighR = array2table([cellInfo,thighR]);
     thighR.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('thighR') = thighR;
+    data.(['ID' num2str(i)]).('thighR') = thighR;
     
     % Left Thigh
     thighL = array2table([cellInfo,thighL]);
     thighL.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('thighL') = thighL;
+    data.(['ID' num2str(i)]).('thighL') = thighL;
     
     % Right Shank
     shankR = array2table([cellInfo,shankR]);
     shankR.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('shankR') = shankR;
+    data.(['ID' num2str(i)]).('shankR') = shankR;
     
     % Left Shank
     shankL = array2table([cellInfo,shankL]);
     shankL.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('shankL') = shankL;
+    data.(['ID' num2str(i)]).('shankL') = shankL;
     
     % Wrist
     wrist = array2table([cellInfo,wrist]);
     wrist.Properties.VariableNames = label;
-    data.(['Sub' num2str(i)]).('wrist') = wrist;
+    data.(['ID' num2str(i)]).('wrist') = wrist;
     
     %     % Export induvidual .mat file (one file per subject)
     %     save([(num2str(i)) '.mat'],...
@@ -224,12 +224,12 @@ function filepaths = filepath_with_sensor_loc(path,trial)
 filepaths=[];
 path = [path slash trial];
 
-filepaths = [filepaths ; {[path '-000_00B432CC.txt.csv']}]; %sensor B trialTrunk
-filepaths = [filepaths ; {[path '-000_00B43293.txt.csv']}]; %sensor D right thigh
-filepaths = [filepaths ; {[path '-000_00B4328B.txt.csv']}]; %sensor C left thigh
-filepaths = [filepaths ; {[path '-000_00B4329B.txt.csv']}]; %sensor F right shank
-filepaths = [filepaths ; {[path '-000_00B432B6.txt.csv']}]; %sensor E left shank
-filepaths = [filepaths ; {[path '-000_00B43295.txt.csv']}]; %sensor A wrist
+filepaths = [filepaths ; {[path '-000_00B432CC.txt']}]; %sensor B trialTrunk
+filepaths = [filepaths ; {[path '-000_00B43293.txt']}]; %sensor D right thigh
+filepaths = [filepaths ; {[path '-000_00B4328B.txt']}]; %sensor C left thigh
+filepaths = [filepaths ; {[path '-000_00B4329B.txt']}]; %sensor F right shank
+filepaths = [filepaths ; {[path '-000_00B432B6.txt']}]; %sensor E left shank
+filepaths = [filepaths ; {[path '-000_00B43295.txt']}]; %sensor A wrist
 filepaths(:,2) = {'Trunk';'ThighR';'ThighL';'ShankR';'ShankL';'Wrist'};
 
 end
@@ -253,7 +253,7 @@ ms_gap = 0; ms_nan = 0;
 data = readtable(path);
 
 % Replace empty columns by all-nan columns
-% (data missing for sub 05 ThighL in trial 14-28)
+% (data missing for participant 05 ThighL in trial 14-28)
 if iscell(data{1,1})
     
     temp = nan(size(data,1),size(data,2));
