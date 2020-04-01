@@ -1,37 +1,35 @@
-% Copyright (c) <2020>, <University of Florida Human Systems Engineering Laboratory>
-% All rights reserved.
+% MIT License
 % 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-% 1. Redistributions of source code must retain the above copyright
-%    notice, this list of conditions and the following disclaimer.
-% 2. Redistributions in binary form must reproduce the above copyright
-%    notice, this list of conditions and the following disclaimer in the
-%    documentation and/or other materials provided with the distribution.
-% 3. All advertising materials mentioning features or use of this software
-%    must display the following acknowledgement:
-%    This product includes software developed by the <organization>.
-% 4. Neither the name of the <organization> nor the
-%    names of its contributors may be used to endorse or promote products
-%    derived from this software without specific prior written permission.
+% Copyright (c) [2020] [University of Florida Human Systems Engineering Laboratory]
 % 
-% THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
-% EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-% WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-% DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-% DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-% (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+% 
+% The above copyright notice and this permission notice shall be included in all
+% copies or substantial portions of the Software.
+% 
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+% SOFTWARE.
+%
 
-% load_data - script to load and preprocess raw data
-% Inputs: raw data folder
-% Output: - .mat file storing preprocessd data for all 30 subjects
+% detect_toe_off - script to roughly detect toe-offs from 
+%                  shank acceleration magnitude
+% Inputs: acc_shank (n x 1 double): magnitude of shank acceleration
+%          (combination of shank acceleration in all three X,Y,Z axis)
+% Output: - idx_toe_off (m x 1 double): frame index for toe-offs
+%                                     (m: # of toe-offs detected)
 % Author: Yue Luo
 % Version: 1.0
-% Last update: 3/12/2020
+% Last update: 04/01/2020
 
 %--------------------------- BEGIN CODE ---------------------------
 

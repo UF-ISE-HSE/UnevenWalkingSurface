@@ -1,103 +1,109 @@
-% Copyright (c) <2020>, <University of Florida Human Systems Engineering Laboratory>
-% All rights reserved.
-% 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-% 1. Redistributions of source code must retain the above copyright
-%    notice, this list of conditions and the following disclaimer.
-% 2. Redistributions in binary form must reproduce the above copyright
-%    notice, this list of conditions and the following disclaimer in the
-%    documentation and/or other materials provided with the distribution.
-% 3. All advertising materials mentioning features or use of this software
-%    must display the following acknowledgement:
-%    This product includes software developed by the <organization>.
-% 4. Neither the name of the <organization> nor the
-%    names of its contributors may be used to endorse or promote products
-%    derived from this software without specific prior written permission.
-% 
-% THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
-% EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-% WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-% DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-% DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-% (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-% load_data - script to load and preprocess raw data
+function export_data(pathInput)
+%
+% MIT License
+%
+% Copyright (c) [2020] [University of Florida Human Systems Engineering Laboratory]
+%
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+%
+% The above copyright notice and this permission notice shall be included in all
+% copies or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+% SOFTWARE.
+%
+%
+%
+%
+%
+% export_data - script to load and preprocess raw data
 % Inputs: raw data folder
 % Output: - .mat file storing preprocessd data for all 30 subjects
 % Author: Yue Luo
 % Version: 1.0
-% Last update: 3/12/2020
+% Last update: 04/01/2020
 
 %--------------------------- BEGIN CODE ---------------------------
 
-clear
-clc
-close all
-global fs fc
-
 %% Section 1 - General Setting
-% 1. Set path of raw data
-% 2. Filter options
+% 0. Set path of raw data
+% 1. Filter options
+% 2. Input trial information
 
-% 1. Path of raw data
-% Set directory for data importing and exporting
-pathInput = [pwd slash 'raw data']; % folder path for raw data
+% 0. Path of raw data
+% Set directory for data importing
+% pathInput = [pwd filesep 'raw data']; % folder path for raw data
 
-% 2. Filter options
+% 1. Filter options
 iflpfilter = 'on';  % low-pass filter: 'on' or 'off'
 fs = 100; % sampling frequency
 fc = 6; % low-pass filter cutoff frequency
 
+% 2. Trial information
+numTrial = 57; % number of trials for one participant
+numVarInTXT = 30; % number of columns within individual .txt file
 %% Section 2 - Data Extraction and Preprocess
 
 % 1. Structure file path to load data
 % Get id list (sort - sort array elements: 'on'/'off')
 ids = list_contents(pathInput,'sort','on');
+% number of column for exported data
+% (temporary, will change size later in the for loop)
+numCol = numVarInTXT+3;
 
 for i = 1:size(ids,1)
     
-    trunk = []; thighR = [];
-    thighL = []; shankR = [];
-    shankL = []; wrist = [];
-    info = [];
+    % preallocate memory for data storage
+    trunk = cell(numTrial,numCol); thighR = cell(numTrial,numCol);
+    thighL = cell(numTrial,numCol); shankR = cell(numTrial,numCol);
+    shankL = cell(numTrial,numCol); wrist = cell(numTrial,numCol);
+    
+    % preallocate memory for other information storage
+    % including 3 columns: id#, trial#, and trial duration
+    info = nan(numTrial,3);
     
     id = ids(i,1);
-    pathidInput = [pathInput slash num2str(i)];
+    pathidInput = [pathInput filesep num2str(id)];
     
     % Get trial list for individual id
     nametxt = list_contents(pathidInput,'sort','off');
     
     % 2. Extract data by sensor location
-    for j = 1:57
+    for j = 1:numTrial
         
         disp(['Processing...       Subject:   ' ...
-            num2str(i) '/' num2str(size(ids,1)) '      <--->      ' ...
-            'Trial:   ' num2str(j) '/57'])
+            num2str(id) '/' num2str(size(ids,1)) '      <--->      ' ...
+            'Trial:   ' num2str(j) '/' num2str(numTrial)])
         
         pathTrials = filepath_with_sensor_loc(pathidInput,num2str(j));
         
         % Trunk (LPFilter - low-pass filter: 'on'/'off')
-        [dataTrunk,label] = extract_data(pathTrials{1,1},'LPFilter',iflpfilter);
+        [dataTrunk,label] = extract_data(pathTrials{1,1},iflpfilter,fs,fc);
         
         % Right Thigh
-        [dataThighR] = extract_data(pathTrials{2,1},'LPFilter',iflpfilter);
+        [dataThighR] = extract_data(pathTrials{2,1},iflpfilter,fs,fc);
         
         % Left Thigh
-        [dataThighL] = extract_data(pathTrials{3,1},'LPFilter',iflpfilter);
+        [dataThighL] = extract_data(pathTrials{3,1},iflpfilter,fs,fc);
         
         % Right Shank
-        [dataShankR] = extract_data(pathTrials{4,1},'LPFilter',iflpfilter);
+        [dataShankR] = extract_data(pathTrials{4,1},iflpfilter,fs,fc);
         
         % Left Shank
-        [dataShankL] = extract_data(pathTrials{5,1},'LPFilter',iflpfilter);
+        [dataShankL] = extract_data(pathTrials{5,1},iflpfilter,fs,fc);
         
         % Wrist
-        [dataWrist] = extract_data(pathTrials{6,1},'LPFilter',iflpfilter);
+        [dataWrist] = extract_data(pathTrials{6,1},iflpfilter,fs,fc);
         
         % 3. Summarize data missing information
         % 1st colomn: missing count, 2nd colomn: missing percentage
@@ -112,158 +118,130 @@ for i = 1:size(ids,1)
         %              8. PacketCounter; 9. SampleTimeFine;
         %              10-37. Data (including acceleration, angular velocity et al. )
         
-        dataInfo = [i, j, sz/fs];
+        trunk(j,:) = [{'trunk'},ms(1,:),dataTrunk];
         
-        trunk = vertcat(trunk,[{'trunk'},ms(1,:),dataTrunk]);
-        thighR = vertcat(thighR,[{'thighR'},ms(2,:),dataThighR]);
-        thighL = vertcat(thighL,[{'thighL'},ms(3,:),dataThighL]);
-        shankR = vertcat(shankR,[{'shankR'},ms(4,:),dataShankR]);
-        shankL = vertcat(shankL,[{'shankL'},ms(5,:),dataShankL]);
-        wrist = vertcat(wrist,[{'wrist'},ms(6,:),dataWrist]);
+        thighR(j,:) = [{'thighR'},ms(2,:),dataThighR];
+        thighL(j,:) = [{'thighL'},ms(3,:),dataThighL];
+        shankR(j,:) = [{'shankR'},ms(4,:),dataShankR];
+        shankL(j,:) = [{'shankL'},ms(5,:),dataShankL];
+        wrist(j,:) = [{'wrist'},ms(6,:),dataWrist];
         
-        info = vertcat(info,dataInfo);
+        info(j,:) = [id, j, sz/fs];
         
     end
     
     surf = label_condition(info(:,2)); % surface type
     cellInfo  = [num2cell(info),cellstr(surf)];
     
-    label = ['Participant','Trial','TrialDuration','Surface','Sensor',...
+    label_full = ['Participant','Trial','TrialDuration','Surface','Sensor',...
         'MissingCount','Missingpct',label];
     
     % Trunk
     trunk = array2table([cellInfo,trunk]);
-    trunk.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('trunk') = trunk;
+    trunk.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('trunk') = trunk;
     
     % Right Thigh
     thighR = array2table([cellInfo,thighR]);
-    thighR.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('thighR') = thighR;
+    thighR.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('thighR') = thighR;
     
     % Left Thigh
     thighL = array2table([cellInfo,thighL]);
-    thighL.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('thighL') = thighL;
+    thighL.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('thighL') = thighL;
     
     % Right Shank
     shankR = array2table([cellInfo,shankR]);
-    shankR.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('shankR') = shankR;
+    shankR.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('shankR') = shankR;
     
     % Left Shank
     shankL = array2table([cellInfo,shankL]);
-    shankL.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('shankL') = shankL;
+    shankL.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('shankL') = shankL;
     
     % Wrist
     wrist = array2table([cellInfo,wrist]);
-    wrist.Properties.VariableNames = label;
-    data.(['ID' num2str(i)]).('wrist') = wrist;
+    wrist.Properties.VariableNames = label_full;
+    data.(['ID' num2str(id)]).('wrist') = wrist;
     
-    %     % Export induvidual .mat file (one file per subject)
-    %     save([(num2str(i)) '.mat'],...
-    %          'trunk','thighR','thighL','shankR','shankL','wrist')
+    % Export induvidual .mat file (one file per subject)
+    save([(num2str(id)) '.mat'],...
+        'trunk','thighR','thighL','shankR','shankL','wrist')
     
 end
 
 %% Section 3 - Data Export
-% Export .mat file (including all subjects)
-save('data.mat','data','-v7.3')
+% Export .mat file (one file including all subjects)
+% save('data.mat','data','-v7.3')
 
 disp('Finished')
 
-%% Section 4 - Functions
-
-function output = slash()
-%% Output '/' for macOS system, '\' for Windows system
-% Input: NA
-% Ontput: '/' or '\'
-
-c=pwd;
-
-if strcmp(c(:,1),'/') % macOS system
-    output = '/';
-else % Windows system
-    output = '\';
 end
 
-end
+%% Section 4 - Functions Used
 
-function list = list_contents(path,~,ifsort)
+function list = list_contents(pth,~,ifsort)
 %% List files in the target path
 % Similar with function dir but removes '.' & '..'
 %
 % sorting option - sort array elements: 'on'/'off'
-% Input: 1. path: target path;
+% Input: 1. pth: target path;
 %        2. placeholder
 %        3. ifsort: indicator for sorting option
 % Ontput: list: filename list contained in target path
 
-list = ({dir(path).name})'; % list files in target path (w/ '.')
+% list files in target path (w/ '.')
+list = dir(pth);
+list = ({list.name})';
 temp = cellfun(@(v)(v(1)),list,'UniformOutput', false); % first element
-list(contains(temp,'.'),:)=[]; % delete row if first element is '.'
+% delete row if first element is '.'
+list(contains(temp,'.'),:)=[];
 
 if strcmp(ifsort,'on')
     list = sort(str2double(list)); % sort list if required
-else
     
 end
 
 end
 
-function filepaths = filepath_with_sensor_loc(path,trial)
+function filepaths = filepath_with_sensor_loc(pth,trial)
 %% List of filepaths with sensor location information
 % Per trial per subject
 %
-% Input: 1. path: target path;
+% Input: 1. pth: target path;
 %        2. trial: trial #
 % Ontput: filepaths: list containing sensor location indicator
 %                    and the corresponding filename
 
 filepaths=[];
-path = [path slash trial];
+pth = [pth filesep trial];
 
-filepaths = [filepaths ; {[path '-000_00B432CC.txt']}]; %sensor B trialTrunk
-filepaths = [filepaths ; {[path '-000_00B43293.txt']}]; %sensor D right thigh
-filepaths = [filepaths ; {[path '-000_00B4328B.txt']}]; %sensor C left thigh
-filepaths = [filepaths ; {[path '-000_00B4329B.txt']}]; %sensor F right shank
-filepaths = [filepaths ; {[path '-000_00B432B6.txt']}]; %sensor E left shank
-filepaths = [filepaths ; {[path '-000_00B43295.txt']}]; %sensor A wrist
+filepaths = [filepaths ; {[pth '-000_00B432CC.txt']}]; %sensor B trialTrunk
+filepaths = [filepaths ; {[pth '-000_00B43293.txt']}]; %sensor D right thigh
+filepaths = [filepaths ; {[pth '-000_00B4328B.txt']}]; %sensor C left thigh
+filepaths = [filepaths ; {[pth '-000_00B4329B.txt']}]; %sensor F right shank
+filepaths = [filepaths ; {[pth '-000_00B432B6.txt']}]; %sensor E left shank
+filepaths = [filepaths ; {[pth '-000_00B43295.txt']}]; %sensor A wrist
 filepaths(:,2) = {'Trunk';'ThighR';'ThighL';'ShankR';'ShankL';'Wrist'};
 
 end
 
-function [data,label] = extract_data(path,~,iffilter)
+function [data,label] = extract_data(pth,iffilter,fs,fc)
 %% Load and preprocess data
 % 1. Load data from .txt/.csv
 % 2. Low-pass filter non-nan data matrix
 %
 % filtering option: 'on'/'off'
-% Input: 1. path: target path;
+% Input: 1. pth: target path;
 %        2. placeholder
 %        3. iffilter: indicator for filtering option
 % Ontput: 1. data: extracted data (cell arrays)
 %         2. label: labels of variables (columns) in extracted data
 
-global fs fc
-ms_gap = 0; ms_nan = 0;
-
 % Load raw data
-data = readtable(path);
-
-% Replace empty columns by all-nan columns
-% (data missing for participant 05 ThighL in trial 14-28)
-if iscell(data{1,1})
-    
-    temp = nan(size(data,1),size(data,2));
-    tbl = array2table(temp);
-    label = erase(data.Properties.VariableNames,'_');
-    tbl.Properties.VariableNames = label;
-    data = tbl;
-    
-else
-end
+data = readtable(pth);
 
 % Replace all-zero columns by all-nan columns
 idxzerocol = all(data{:,:}==0,1);
@@ -271,7 +249,6 @@ temp = nan(size(data{:,idxzerocol},1),size(data{:,idxzerocol},2));
 
 if ~isempty(temp)
     data{:,idxzerocol} = temp;
-else
 end
 
 % Butterworth low-pass filter (4th order) if required
@@ -285,7 +262,6 @@ if strcmp(iffilter,'on')
     %  freqz(b,a)
     data{idxfiltrow,idxfiltcol} = filtfilt(b,a,data{idxfiltrow,idxfiltcol});
     
-else
 end
 
 % Convert table into cell arrays
