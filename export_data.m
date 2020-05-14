@@ -31,7 +31,7 @@ function export_data(pathInput)
 % Output: - .mat file storing preprocessd data for all 30 subjects
 % Author: Yue Luo
 % Version: 1.0
-% Last update: 04/01/2020
+% Last update: 05/14/2020
 
 %--------------------------- BEGIN CODE ---------------------------
 
@@ -166,15 +166,15 @@ for i = 1:size(ids,1)
     wrist.Properties.VariableNames = label_full;
     data.(['ID' num2str(id)]).('wrist') = wrist;
     
-    % Export induvidual .mat file (one file per subject)
-    save([(num2str(id)) '.mat'],...
-        'trunk','thighR','thighL','shankR','shankL','wrist')
+%     % Export induvidual .mat file (one file per subject)
+%     save([(num2str(id)) '.mat'],...
+%         'trunk','thighR','thighL','shankR','shankL','wrist')
     
 end
 
 %% Section 3 - Data Export
 % Export .mat file (one file including all subjects)
-% save('data.mat','data','-v7.3')
+save('data.mat','data','-v7.3')
 
 disp('Finished')
 
@@ -251,7 +251,7 @@ if ~isempty(temp)
     data{:,idxzerocol} = temp;
 end
 
-% Butterworth low-pass filter (4th order) if required
+% Butterworth low-pass filter (2nd order) if required
 if strcmp(iffilter,'on')
     
     % Index for columns in need of filter
