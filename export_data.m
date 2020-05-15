@@ -1,6 +1,6 @@
 function export_data(pathInput, iflpfilter, exportBySubject)
 %
-% EXPORT_DATA(pathInput, filter_data) loads, preprocesses, and exports raw
+% EXPORT_DATA(pathInput, iflpfilter, exportBySubjec) loads, preprocesses, and exports raw
 % data collected in study by Luo et al. "A database of human gait performance 
 % on irregular and uneven surfaces collected by wearable sensors". Under review
 %
