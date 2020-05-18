@@ -1,5 +1,24 @@
-function export_data(pathInput)
+function export_data(pathInput, iflpfilter, exportBySubject)
 %
+% EXPORT_DATA(pathInput, iflpfilter, exportBySubjec) loads, preprocesses, and exports raw
+% data collected in study by Luo et al. "A database of human gait performance 
+% on irregular and uneven surfaces collected by wearable sensors". Under review
+%
+% Inputs: 
+% pathInput : str
+%    full path to raw data folder
+% iflpfilter : str (default='off'), choices {'on', 'off'}
+%   If 'on' data are low pass filtered
+%   If 'off' no filtering performed. , 
+% exportBySubject : str (default='on;), choices {'on', 'off'} 
+%   If 'on', a separate mat file is created for each subject. 
+%   If 'off', a single mat file is created for all subjects. 
+
+% Output: - .mat file(s) 
+%   stores preprocessd data for all 30 subjects. Mat file is stored in a 
+%   subfolder 'processed' in parent of pathInput. e.g. if pathInput is 
+%   ~/data/imu/raw, processed data will be saved in ~/data/imu/processed
+
 % MIT License
 %
 % Copyright (c) [2020] [University of Florida Human Systems Engineering Laboratory]
@@ -22,13 +41,6 @@ function export_data(pathInput)
 % OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 % SOFTWARE.
 %
-%
-%
-%
-%
-% export_data - script to load and preprocess raw data
-% Inputs: raw data folder
-% Output: - .mat file storing preprocessd data for all 30 subjects
 % Author: Yue Luo
 % Version: 1.0
 % Last update: 05/14/2020
@@ -36,22 +48,37 @@ function export_data(pathInput)
 %--------------------------- BEGIN CODE ---------------------------
 
 %% Section 1 - General Setting
-% 0. Set path of raw data
+% 0. Setup path and settings
 % 1. Filter options
 % 2. Input trial information
 
-% 0. Path of raw data
-% Set directory for data importing
-% pathInput = [pwd filesep 'raw data']; % folder path for raw data
+% 0. Setup path and settings
+pathOutput = setup_output_path(pathInput);
+
+if nargin == 1
+    iflpfilter = 'off';
+    exportBySubject = 'on';
+elseif nargin == 2
+    exportBySubject = 'on';
+end
 
 % 1. Filter options
-iflpfilter = 'on';  % low-pass filter: 'on' or 'off'
+
 fs = 100; % sampling frequency
 fc = 6; % low-pass filter cutoff frequency
 
 % 2. Trial information
 numTrial = 57; % number of trials for one participant
 numVarInTXT = 30; % number of columns within individual .txt file
+
+disp('****************  Settings **********************************')
+disp(['* filter : ', iflpfilter])
+disp(['* export by subject : ', exportBySubject])
+disp(['* folder for output data is ', pathOutput])
+disp('*************************************************************')
+disp(' ')
+
+
 %% Section 2 - Data Extraction and Preprocess
 
 % 1. Structure file path to load data
@@ -76,13 +103,13 @@ for i = 1:size(ids,1)
     pathidInput = [pathInput filesep num2str(id)];
     
     % Get trial list for individual id
-    nametxt = list_contents(pathidInput,'sort','off');
+    % nametxt = list_contents(pathidInput,'sort','off'); % UNUSED?
     
     % 2. Extract data by sensor location
     for j = 1:numTrial
         
-        disp(['Processing...       Subject:   ' ...
-            num2str(id) '/' num2str(size(ids,1)) '      <--->      ' ...
+        disp(['Processing ...       Subject:   ' ...
+            num2str(id) '/' num2str(size(ids,1)) '      --->      ' ...
             'Trial:   ' num2str(j) '/' num2str(numTrial)])
         
         pathTrials = filepath_with_sensor_loc(pathidInput,num2str(j));
@@ -166,21 +193,45 @@ for i = 1:size(ids,1)
     wrist.Properties.VariableNames = label_full;
     data.(['ID' num2str(id)]).('wrist') = wrist;
     
-%     % Export induvidual .mat file (one file per subject)
-%     save([(num2str(id)) '.mat'],...
-%         'trunk','thighR','thighL','shankR','shankL','wrist')
+    % Export individual .mat file (one file per subject)
+    if strcmp(exportBySubject,'on')
+        fl = [pathOutput, filesep, (num2str(id)) '.mat'];
+        disp(['saving data to ', fl])
+        save(fl, 'trunk','thighR','thighL','shankR','shankL','wrist', '-v7.3')
+    end
     
 end
 
-%% Section 3 - Data Export
+%% Section 3 - Data Export to single file for all subects
 % Export .mat file (one file including all subjects)
-save('data.mat','data','-v7.3')
+
+if strcmp(exportBySubject,'off')
+    fl = [pathOutput, filesep, 'data.mat'];
+    disp(['saving data to ', fl])
+    save(fl,'data','-v7.3')
+end
 
 disp('Finished')
 
 end
 
 %% Section 4 - Functions Used
+
+function pathOutput = setup_output_path(pathInput)
+% helper function to set up output path for processed data
+
+final_char = pathInput(end);
+if final_char ~= filesep
+    pathInput = [pathInput, filesep];
+end
+indx = strfind(pathInput, filesep);
+pathOutput = [pathInput(1:indx(end-1)), 'processed data'];
+
+if ~exist(pathOutput, 'dir')
+    mkdir(pathOutput)
+end
+
+end
 
 function list = list_contents(pth,~,ifsort)
 %% List files in the target path
